@@ -1,0 +1,53 @@
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar">
+    <app-sidebar (launch)="onLaunch($event)" (stop)="onStop()" />
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+
+    <!-- Status bar -->
+    <div class="status-bar" [class.active]="isRunning">
+      @if (isRunning) {
+        <mat-progress-bar mode="indeterminate" class="progress-bar" />
+      }
+      <div class="status-content">
+        <span class="status-dot" [class.running]="isRunning" [class.done]="status === SimStatus.Done" [class.error]="status === SimStatus.Error"></span>
+        <span class="status-label">{{ statusLabel || 'Listo para simular' }}</span>
+        @if (errorMsg) {
+          <span class="error-msg">{{ errorMsg }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Visualization area -->
+    <div class="viz-area">
+      <div class="graph-panel">
+        <app-graph-view
+          [nodes]="nodes"
+          [edges]="edges"
+          [turn]="currentTurn"
+          [simIndex]="currentSim"
+          [totalSims]="totalSims"
+        />
+      </div>
+      <div class="metrics-panel">
+        <app-metrics-panel
+          [metrics]="metrics"
+          [stats]="stats"
+          [initialLiquidity]="initialLiquidity"
+        />
+      </div>
+    </div>
+
+    <!-- Final report -->
+    @if (reportData) {
+      <div class="report-area">
+        <app-final-report [reportData]="reportData" />
+      </div>
+    }
+
+  </main>
+</div>

@@ -1,0 +1,65 @@
+@use '@angular/material' as mat;
+
+// ---- CSS Custom Properties (dark theme) ----
+:root {
+  --bg-main:       #0a0c14;
+  --surface:       #0f1117;
+  --surface-card:  #141726;
+  --border-color:  rgba(255, 255, 255, 0.08);
+
+  --color-primary: #6366f1;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+
+  --text-primary:   #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+}
+
+html {
+  height: 100%;
+  color-scheme: dark;
+
+  @include mat.theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: mat.$violet-palette,
+      ),
+      typography: Roboto,
+      density: -1,
+    )
+  );
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+// Material overrides for dark theme
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--border-color);
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary);
+  --mdc-outlined-text-field-label-text-color: var(--text-muted);
+  --mdc-outlined-text-field-input-text-color: var(--text-primary);
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+mat-divider {
+  --mat-divider-color: var(--border-color) !important;
+}
+

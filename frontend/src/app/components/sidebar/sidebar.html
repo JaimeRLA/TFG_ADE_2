@@ -1,0 +1,168 @@
+<div class="sidebar">
+  <!-- Logo / Title -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <mat-icon class="logo-icon">account_balance</mat-icon>
+      <div>
+        <h1 class="sidebar-title">Stress Test Lab</h1>
+        <p class="sidebar-subtitle">Simulación de Corridas Bancarias · 3M hab.</p>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider />
+
+  <div class="sidebar-content" [formGroup]="form">
+
+    <!-- Crisis Params -->
+    <section class="param-section">
+      <h3 class="section-title">
+        <mat-icon>warning_amber</mat-icon>
+        Parámetros de la Crisis
+      </h3>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Gravedad de la Noticia
+          <span class="slider-value">{{ form.get('score')?.value | number:'1.2-2' }}</span>
+        </label>
+        <mat-slider min="0" max="1" step="0.01" discrete>
+          <input matSliderThumb formControlName="score" />
+        </mat-slider>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Credibilidad del Medio
+          <span class="slider-value">{{ form.get('validez')?.value | number:'1.2-2' }}</span>
+        </label>
+        <mat-slider min="0" max="1" step="0.01" discrete>
+          <input matSliderThumb formControlName="validez" />
+        </mat-slider>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Difusión Inicial (Alcance)
+          <span class="slider-value">{{ (form.get('difusion')?.value * 100) | number:'1.0-0' }}%</span>
+        </label>
+        <mat-slider min="0" max="1" step="0.01" discrete>
+          <input matSliderThumb formControlName="difusion" />
+        </mat-slider>
+      </div>
+    </section>
+
+    <mat-divider />
+
+    <!-- Simulation Control -->
+    <section class="param-section">
+      <h3 class="section-title">
+        <mat-icon>timer</mat-icon>
+        Control de Simulación
+      </h3>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Delay por turno (seg)
+          <span class="slider-value">{{ form.get('velocidad')?.value | number:'1.2-2' }}s</span>
+        </label>
+        <mat-slider min="0" max="2" step="0.01" discrete>
+          <input matSliderThumb formControlName="velocidad" />
+        </mat-slider>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Turnos máximos
+          <span class="slider-value">{{ form.get('max_turnos')?.value }}</span>
+        </label>
+        <mat-slider min="5" max="500" step="5" discrete>
+          <input matSliderThumb formControlName="max_turnos" />
+        </mat-slider>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Número de simulaciones
+          <span class="slider-value">{{ form.get('n_simulaciones')?.value }}</span>
+        </label>
+        <mat-slider min="1" max="50" step="1" discrete>
+          <input matSliderThumb formControlName="n_simulaciones" />
+        </mat-slider>
+      </div>
+    </section>
+
+    <mat-divider />
+
+    <!-- Population -->
+    <section class="param-section">
+      <h3 class="section-title">
+        <mat-icon>groups</mat-icon>
+        Estructura Poblacional
+      </h3>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Nodos en la Red
+          <span class="slider-value">{{ form.get('n_agentes')?.value }}</span>
+        </label>
+        <mat-slider min="50" max="1000" step="10" discrete>
+          <input matSliderThumb formControlName="n_agentes" />
+        </mat-slider>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          % No-Clientes
+          <span class="slider-value">{{ (form.get('p_externos')?.value * 100) | number:'1.0-0' }}%</span>
+        </label>
+        <mat-slider min="0" max="0.5" step="0.01" discrete>
+          <input matSliderThumb formControlName="p_externos" />
+        </mat-slider>
+      </div>
+    </section>
+
+    <mat-divider />
+
+    <!-- Bank Structure -->
+    <section class="param-section">
+      <h3 class="section-title">
+        <mat-icon>account_balance</mat-icon>
+        Estructura Bancaria
+      </h3>
+
+      <div class="input-group">
+        <label class="slider-label">Depósitos Totales (€)</label>
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput type="number" formControlName="dep_input" />
+          <mat-icon matSuffix>euro</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="slider-group">
+        <label class="slider-label">
+          Liquidez Inmediata (Caja)
+          <span class="slider-value">{{ (form.get('encaje')?.value * 100) | number:'1.0-0' }}%</span>
+        </label>
+        <mat-slider min="0.01" max="0.3" step="0.01" discrete>
+          <input matSliderThumb formControlName="encaje" />
+        </mat-slider>
+      </div>
+    </section>
+
+  </div><!-- sidebar-content -->
+
+  <div class="sidebar-footer">
+    @if (!isRunning) {
+      <button mat-flat-button class="launch-btn" (click)="onLaunch()">
+        <mat-icon>play_arrow</mat-icon>
+        Lanzar Simulación
+      </button>
+    } @else {
+      <button mat-stroked-button class="stop-btn" (click)="onStop()">
+        <mat-icon>stop</mat-icon>
+        Detener
+      </button>
+    }
+  </div>
+</div>

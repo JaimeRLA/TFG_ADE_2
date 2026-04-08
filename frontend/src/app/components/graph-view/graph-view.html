@@ -1,0 +1,9 @@
+<div class="graph-wrapper">
+  @if (nodes.length === 0) {
+    <div class="graph-empty">
+      <span class="empty-icon">⬡</span>
+      <p>Configura los parámetros y lanza la simulación para ver la red de influencia social.</p>
+    </div>
+  }
+  <div #graphDiv class="plotly-container" [class.hidden]="nodes.length === 0"></div>
+</div>

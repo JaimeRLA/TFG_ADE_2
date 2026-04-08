@@ -1,0 +1,130 @@
+@if (reportData) {
+<div class="report-wrapper">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h2 class="report-title">
+      <mat-icon>assessment</mat-icon>
+      Informe Agregado de Riesgo
+    </h2>
+    <span class="report-meta">{{ reportData.n_simulaciones }} simulaciones · {{ reportData.max_turnos }} turnos máx.</span>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SECCIÓN 1 – ESTADÍSTICAS BÁSICAS      -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="section-header"><span>1. Estadísticas Básicas</span></div>
+
+  <div class="summary-kpis">
+    <div class="summary-card">
+      <div class="summary-label">Media Fugados Total</div>
+      <div class="summary-value">{{ reportData.avg_huidas_final | number:'1.0-0' }}</div>
+      <div class="summary-sub">{{ avgHuidosPct | number:'1.1-1' }}% de la población</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Alcance Poblacional Medio</div>
+      <div class="summary-value">{{ (reportData.avg_inf_final / reportData.poblacion_total * 100) | number:'1.1-1' }}%</div>
+      <div class="summary-sub">población informada</div>
+    </div>
+    <div class="summary-card" [class.danger-card]="reportData.prob_quiebra > 50">
+      <div class="summary-label">Prob. de Quiebra</div>
+      <div class="summary-value" [class.danger]="reportData.prob_quiebra > 50">
+        {{ reportData.prob_quiebra | number:'1.0-0' }}%
+      </div>
+      <div class="summary-sub" [class.danger-text]="reportData.prob_quiebra > 50">
+        {{ reportData.prob_quiebra > 50 ? '⚠ Riesgo Crítico' : 'Riesgo Controlado' }}
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Turno Medio Colapso</div>
+      <div class="summary-value">
+        {{ reportData.turno_medio_colapso > 0 ? (reportData.turno_medio_colapso | number:'1.1-1') : 'N/A' }}
+      </div>
+      <div class="summary-sub">{{ reportData.turno_medio_colapso > 0 ? 'turnos hasta quiebra' : 'sin quiebras' }}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Supervivencia Media</div>
+      <div class="summary-value success">{{ reportData.supervivencia_media | number:'1.1-1' }}%</div>
+      <div class="summary-sub">del tiempo total simulado</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- SECCIÓN 2 – COMPORTAMIENTO POR SEGMENTO Y PERFIL  -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div class="section-header"><span>2. Comportamiento por Segmento y Perfil (Media Global)</span></div>
+
+  <div class="charts-row-3">
+    <div class="chart-panel" #chartEdad></div>
+    <div class="chart-panel" #chartTipo></div>
+    <div class="gender-panel">
+      <h4 class="gender-title">Impacto Medio por Género</h4>
+      <div class="gender-item">
+        <span class="gender-label">Hombre</span>
+        <div class="gender-bar-wrap">
+          <div class="gender-bar-fill" [style.width.%]="pctHombre > 100 ? 100 : pctHombre" style="background:var(--color-primary)"></div>
+        </div>
+        <span class="gender-value">{{ pctHombre | number:'1.1-1' }}%</span>
+      </div>
+      <div class="gender-item">
+        <span class="gender-label">Mujer</span>
+        <div class="gender-bar-wrap">
+          <div class="gender-bar-fill" [style.width.%]="pctMujer > 100 ? 100 : pctMujer" style="background:#f472b6"></div>
+        </div>
+        <span class="gender-value">{{ pctMujer | number:'1.1-1' }}%</span>
+      </div>
+      <div class="fgd-info">
+        <mat-icon>shield</mat-icon>
+        <div>
+          <div class="fgd-label">Fuga media protegidos FGD</div>
+          <div class="fgd-value">{{ reportData.avg_fgd | number:'1.1-1' }}%</div>
+        </div>
+      </div>
+      <div class="worst-segment">
+        <div class="ws-label">Segmento más afectado</div>
+        <div class="ws-value">{{ reportData.worst_tipo }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECCIÓN 3 – ANÁLISIS DE DISTRIBUCIÓN      -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-header"><span>3. Análisis de Distribución y Tendencia</span></div>
+
+  <div class="charts-row-2">
+    <div class="chart-panel tall" #chartTrend></div>
+    @if (reportData.turnos_quiebra.length > 0) {
+      <div class="chart-panel tall" #chartHist></div>
+    } @else {
+      <div class="chart-panel tall no-data">
+        <mat-icon>check_circle</mat-icon>
+        <p>No hubo quiebras en ninguna simulación</p>
+      </div>
+    }
+  </div>
+
+  <div class="chart-full" #chartLiq></div>
+
+  <!-- CAJA DE INTERPRETACIÓN -->
+  <div class="insight-box">
+    <mat-icon class="insight-icon">lightbulb</mat-icon>
+    <div class="insight-text">
+      <strong>Interpretación:</strong>
+      El turno medio de colapso es
+      <strong>{{ reportData.turno_medio_colapso > 0 ? (reportData.turno_medio_colapso | number:'1.1-1') : 'N/A' }}</strong>,
+      lo que indica la velocidad de la corrida bancaria.
+      El segmento que más capital retira en promedio es
+      <strong>{{ reportData.worst_tipo }}</strong>.
+      @if (reportData.prob_quiebra > 50) {
+        La probabilidad de quiebra supera el 50%, lo que indica un escenario de
+        <strong>riesgo sistémico crítico</strong>.
+      } @else {
+        La probabilidad de quiebra es baja, el banco sobreviviría
+        la mayoría de los escenarios simulados.
+      }
+    </div>
+  </div>
+
+</div>
+}

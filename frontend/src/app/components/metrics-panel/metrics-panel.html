@@ -1,0 +1,69 @@
+<div class="metrics-panel">
+
+  <!-- KPI Cards -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <mat-icon>directions_run</mat-icon>
+        Clientes Fugados
+      </div>
+      <div class="kpi-value danger">
+        {{ metrics ? (metrics.personas_huidas | number:'1.0-0') : '—' }}
+      </div>
+      <div class="kpi-bar">
+        <div class="kpi-bar-fill danger" [style.width.%]="pctHuidos > 100 ? 100 : pctHuidos"></div>
+      </div>
+      <div class="kpi-pct">{{ pctHuidos | number:'1.1-1' }}% población</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <mat-icon>wifi</mat-icon>
+        Alcance Informativo
+      </div>
+      <div class="kpi-value warning">
+        {{ metrics ? (metrics.personas_inf | number:'1.0-0') : '—' }}
+      </div>
+      <div class="kpi-bar">
+        <div class="kpi-bar-fill warning" [style.width.%]="pctAlcance > 100 ? 100 : pctAlcance"></div>
+      </div>
+      <div class="kpi-pct">{{ pctAlcance | number:'1.1-1' }}% población</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <mat-icon>campaign</mat-icon>
+        Intensidad Rumor
+      </div>
+      <div class="kpi-value info">
+        {{ pctRumor | number:'1.1-1' }}%
+      </div>
+      <div class="kpi-bar">
+        <div class="kpi-bar-fill info" [style.width.%]="pctRumor > 100 ? 100 : pctRumor"></div>
+      </div>
+      <div class="kpi-pct">No-clientes activados</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <mat-icon>savings</mat-icon>
+        Liquidez Restante
+      </div>
+      <div class="kpi-value" [class.success]="pctLiquidez > 50" [class.warning]="pctLiquidez > 10 && pctLiquidez <= 50" [class.danger]="pctLiquidez <= 10">
+        {{ metrics ? (metrics.liquidez | number:'1.0-0') + '€' : '—' }}
+      </div>
+      <div class="kpi-bar">
+        <div class="kpi-bar-fill"
+          [class.success]="pctLiquidez > 50"
+          [class.warning]="pctLiquidez > 10 && pctLiquidez <= 50"
+          [class.danger]="pctLiquidez <= 10"
+          [style.width.%]="pctLiquidez > 100 ? 100 : pctLiquidez">
+        </div>
+      </div>
+      <div class="kpi-pct">{{ pctLiquidez | number:'1.1-1' }}% reserva inicial</div>
+    </div>
+  </div>
+
+  <!-- Liquidity Chart -->
+  <div class="chart-container" #liqChart></div>
+</div>
