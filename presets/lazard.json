@@ -1,0 +1,54 @@
+{
+  "name": "Lazard",
+  "description": "Banco de inversión institucional con clientela profesional",
+  "demographics": {
+    "edad_media": 50,
+    "edad_desviacion": 10,
+    "edad_minima": 25,
+    "edad_maxima": 90,
+    "distribucion_sexo": ["H", "M"],
+    "probabilidades_sexo": [0.75, 0.25],
+    "factor_h": 1.15,
+    "factor_m": 1.0
+  },
+  "deposit_guarantee": {
+    "umbral_fgd": 100000,
+    "reduccion_panico_fgd": 0.05
+  },
+  "loyalty": {
+    "rango_fidelidad": [0.4, 0.8]
+  },
+  "balances": {
+    "saldo_retail_rango": [50000, 150000],
+    "saldo_empresa_rango": [1000000, 5000000],
+    "distribucion_tipos": ["Retail", "VIP", "Empresa"],
+    "probabilidades_tipos": [0.40, 0.40, 0.20]
+  },
+  "behavior": {
+    "k_ruido_cliente": 10,
+    "x0_cliente": 0.50,
+    "k_ruido_no_cliente": 12,
+    "x0_no_cliente": 0.45
+  },
+  "decision_weights": {
+    "peso_noticia": 0.60,
+    "peso_social": 0.05,
+    "peso_liquidez": 0.35
+  },
+  "market": {
+    "poblacion_objetivo": 1000000
+  },
+  "network": {
+    "red_enlaces_nuevos": 3,
+    "red_prob_triangulo": 0.20
+  },
+  "multipliers": {
+    "multiplicador_empresa": [10.0, 50.0],
+    "multiplicador_vip": [2.0, 5.0],
+    "multiplicador_retail": [0.5, 1.5]
+  },
+  "bank_structure": {
+    "total_depositos": 1000000000000,
+    "liquidez_inicial": 0.05
+  }
+}

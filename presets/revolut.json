@@ -1,0 +1,54 @@
+{
+  "name": "Revolut",
+  "description": "Neobanca digital para nativos digitales (Gen Z & Millennials)",
+  "demographics": {
+    "edad_media": 20,
+    "edad_desviacion": 8,
+    "edad_minima": 18,
+    "edad_maxima": 50,
+    "distribucion_sexo": ["H", "M"],
+    "probabilidades_sexo": [0.5, 0.5],
+    "factor_h": 1.1,
+    "factor_m": 1.0
+  },
+  "deposit_guarantee": {
+    "umbral_fgd": 100000,
+    "reduccion_panico_fgd": 0.6
+  },
+  "loyalty": {
+    "rango_fidelidad": [0.05, 0.15]
+  },
+  "balances": {
+    "saldo_retail_rango": [100, 5000],
+    "saldo_empresa_rango": [10000, 100000],
+    "distribucion_tipos": ["Retail", "VIP", "Empresa"],
+    "probabilidades_tipos": [0.92, 0.06, 0.02]
+  },
+  "behavior": {
+    "k_ruido_cliente": 18,
+    "x0_cliente": 0.30,
+    "k_ruido_no_cliente": 12,
+    "x0_no_cliente": 0.45
+  },
+  "decision_weights": {
+    "peso_noticia": 0.15,
+    "peso_social": 0.80,
+    "peso_liquidez": 0.05
+  },
+  "market": {
+    "poblacion_objetivo": 1000000
+  },
+  "network": {
+    "red_enlaces_nuevos": 8,
+    "red_prob_triangulo": 0.70
+  },
+  "multipliers": {
+    "multiplicador_empresa": [5.0, 15.0],
+    "multiplicador_vip": [2.0, 6.0],
+    "multiplicador_retail": [0.1, 2.0]
+  },
+  "bank_structure": {
+    "total_depositos": 15000000000,
+    "liquidez_inicial": 0.12
+  }
+}

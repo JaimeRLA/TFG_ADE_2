@@ -1,0 +1,531 @@
+<div class="preset-manager">
+  <!-- Header with back button -->
+  <div class="manager-header">
+    <div class="header-content">
+      <button mat-icon-button routerLink="/" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="page-title">
+          <mat-icon class="title-icon">tune</mat-icon>
+          Gestión de Parámetros
+        </h1>
+        <p class="page-subtitle">Configura y gestiona diferentes perfiles bancarios</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="newPreset()" class="new-preset-btn">
+        <mat-icon>add</mat-icon>
+        Nuevo Preset
+      </button>
+    </div>
+  </div>
+
+  <div class="manager-content">
+    <!-- Preset Editor Area -->
+    <div class="editor-area">
+      <div class="list-header">
+        <h3 class="section-title">
+          <mat-icon>folder</mat-icon>
+          Presets Disponibles
+        </h3>
+        <button mat-raised-button color="primary" (click)="newPreset()" class="new-btn">
+          <mat-icon>add</mat-icon>
+          Nuevo Preset
+        </button>
+      </div>
+
+      <div class="preset-items">
+        @if (isLoading) {
+          <div class="loading-state">
+            <mat-icon>refresh</mat-icon>
+            <p>Cargando presets...</p>
+          </div>
+        } @else if (loadError) {
+          <div class="error-state">
+            <mat-icon>error_outline</mat-icon>
+            <p>Error al cargar presets</p>
+            <button mat-stroked-button (click)="loadPresets()">Reintentar</button>
+          </div>
+        } @else if (presets.length === 0) {
+          <div class="empty-list-state">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No hay presets disponibles</p>
+          </div>
+        } @else {
+          @for (preset of presets; track preset.id) {
+            <div class="preset-item" [class.selected]="selectedPresetId === preset.id">
+              <div class="preset-info" (click)="selectPreset(preset.id)">
+                <mat-icon class="preset-icon">account_balance</mat-icon>
+                <div class="preset-text">
+                  <h4>{{ preset.name }}</h4>
+                  <p>{{ preset.description }}</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="deletePreset(preset.id)" class="delete-btn">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Preset Editor -->
+    @if (isEditing) {
+      <div class="preset-editor">
+        <div class="editor-header">
+          <div class="editor-title">
+            <mat-icon>{{ isNewPreset ? 'add_circle_outline' : 'edit' }}</mat-icon>
+            <h2>{{ isNewPreset ? 'Crear Nuevo Preset' : 'Editar Preset' }}</h2>
+          </div>
+          <div class="editor-actions">
+            <button mat-stroked-button (click)="cancel()">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+            <button mat-raised-button color="primary" (click)="savePreset()">
+              <mat-icon>save</mat-icon>
+              Guardar
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-content">
+          <form [formGroup]="presetForm">
+            <!-- Basic Info -->
+            <div class="form-section basic-info">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombre del Preset</mat-label>
+                <input matInput formControlName="name" placeholder="ej: Silicon Valley Bank" />
+                <mat-icon matPrefix>label</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Descripción</mat-label>
+                <textarea matInput formControlName="description" rows="2" placeholder="Breve descripción del perfil bancario"></textarea>
+                <mat-icon matPrefix>description</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <mat-tab-group class="params-tabs">
+              <!-- Demographics Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>people</mat-icon>
+                  Demografía
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>cake</mat-icon>
+                      Distribución de Edad
+                    </h4>
+                    <div class="form-grid">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Edad Media</mat-label>
+                        <input matInput type="number" formControlName="edad_media" />
+                        <span matSuffix>años</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Desviación</mat-label>
+                        <input matInput type="number" formControlName="edad_desviacion" />
+                        <span matSuffix>±</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Edad Mínima</mat-label>
+                        <input matInput type="number" formControlName="edad_minima" />
+                        <span matSuffix>años</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Edad Máxima</mat-label>
+                        <input matInput type="number" formControlName="edad_maxima" />
+                        <span matSuffix>años</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>wc</mat-icon>
+                      Factores de Género
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Factor Hombre</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="factor_h" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Factor Mujer</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="factor_m" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Bank Structure Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>account_balance</mat-icon>
+                  Estructura Bancaria
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>euro</mat-icon>
+                      Capacidad Financiera
+                    </h4>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Total Depósitos</mat-label>
+                      <input matInput type="number" formControlName="total_depositos" />
+                      <span matSuffix>€</span>
+                    </mat-form-field>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        Liquidez Inicial
+                        <span class="slider-value">{{ (presetForm.get('liquidez_inicial')?.value * 100) | number:'1.0-1' }}%</span>
+                      </label>
+                      <mat-slider min="0.01" max="0.5" step="0.01" discrete>
+                        <input matSliderThumb formControlName="liquidez_inicial" />
+                      </mat-slider>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>shield</mat-icon>
+                      Fondo de Garantía de Depósitos
+                    </h4>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Umbral FGD</mat-label>
+                      <input matInput type="number" formControlName="umbral_fgd" />
+                      <span matSuffix>€</span>
+                    </mat-form-field>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        Reducción Pánico FGD
+                        <span class="slider-value">{{ presetForm.get('reduccion_panico_fgd')?.value | number:'1.0-2' }}</span>
+                      </label>
+                      <mat-slider min="0" max="1" step="0.05" discrete>
+                        <input matSliderThumb formControlName="reduccion_panico_fgd" />
+                      </mat-slider>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Customer Behavior Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>psychology</mat-icon>
+                  Comportamiento
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>person</mat-icon>
+                      Clientes
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>K Ruido Cliente</mat-label>
+                        <input matInput type="number" formControlName="k_ruido_cliente" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>x0 Cliente</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="x0_cliente" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>person_outline</mat-icon>
+                      No Clientes
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>K Ruido No Cliente</mat-label>
+                        <input matInput type="number" formControlName="k_ruido_no_cliente" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>x0 No Cliente</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="x0_no_cliente" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>favorite</mat-icon>
+                      Fidelidad
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Fidelidad Mínima</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="fidelidad_min" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Fidelidad Máxima</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="fidelidad_max" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Balances Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>account_balance_wallet</mat-icon>
+                  Saldos
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>storefront</mat-icon>
+                      Saldos Retail
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" formControlName="saldo_retail_min" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" formControlName="saldo_retail_max" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>business</mat-icon>
+                      Saldos Empresa
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" formControlName="saldo_empresa_min" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" formControlName="saldo_empresa_max" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>pie_chart</mat-icon>
+                      Distribución de Tipos
+                    </h4>
+                    <div class="form-grid cols-3">
+                      <mat-form-field appearance="outline">
+                        <mat-label>% Retail</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="prob_retail" />
+                        <span matSuffix>%</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>% VIP</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="prob_vip" />
+                        <span matSuffix>%</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>% Empresa</mat-label>
+                        <input matInput type="number" step="0.01" formControlName="prob_empresa" />
+                        <span matSuffix>%</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Decision Weights Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>balance</mat-icon>
+                  Pesos de Decisión
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>tune</mat-icon>
+                      Factores de Influencia
+                    </h4>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        <mat-icon>newspaper</mat-icon>
+                        Peso Noticia
+                        <span class="slider-value">{{ presetForm.get('peso_noticia')?.value | number:'1.0-2' }}</span>
+                      </label>
+                      <mat-slider min="0" max="1" step="0.05" discrete>
+                        <input matSliderThumb formControlName="peso_noticia" />
+                      </mat-slider>
+                    </div>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        <mat-icon>groups</mat-icon>
+                        Peso Social
+                        <span class="slider-value">{{ presetForm.get('peso_social')?.value | number:'1.0-2' }}</span>
+                      </label>
+                      <mat-slider min="0" max="1" step="0.05" discrete>
+                        <input matSliderThumb formControlName="peso_social" />
+                      </mat-slider>
+                    </div>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        <mat-icon>water_drop</mat-icon>
+                        Peso Liquidez
+                        <span class="slider-value">{{ presetForm.get('peso_liquidez')?.value | number:'1.0-2' }}</span>
+                      </label>
+                      <mat-slider min="0" max="1" step="0.05" discrete>
+                        <input matSliderThumb formControlName="peso_liquidez" />
+                      </mat-slider>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Market & Network Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>hub</mat-icon>
+                  Mercado y Red
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>public</mat-icon>
+                      Mercado
+                    </h4>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Población Objetivo</mat-label>
+                      <input matInput type="number" formControlName="poblacion_objetivo" />
+                      <span matSuffix>habitantes</span>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>share</mat-icon>
+                      Estructura de Red Social
+                    </h4>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Enlaces Nuevos</mat-label>
+                      <input matInput type="number" formControlName="red_enlaces_nuevos" />
+                    </mat-form-field>
+
+                    <div class="slider-group">
+                      <label class="slider-label">
+                        Probabilidad Triángulo
+                        <span class="slider-value">{{ presetForm.get('red_prob_triangulo')?.value | number:'1.0-2' }}</span>
+                      </label>
+                      <mat-slider min="0" max="1" step="0.05" discrete>
+                        <input matSliderThumb formControlName="red_prob_triangulo" />
+                      </mat-slider>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Multipliers Tab -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>trending_up</mat-icon>
+                  Multiplicadores
+                </ng-template>
+                <div class="tab-content">
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>business</mat-icon>
+                      Empresa
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_empresa_min" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_empresa_max" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>star</mat-icon>
+                      VIP
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_vip_min" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_vip_max" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
+                      <mat-icon>storefront</mat-icon>
+                      Retail
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_retail_min" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" step="0.1" formControlName="mult_retail_max" />
+                        <span matSuffix>×</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </form>
+        </div>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <mat-icon>folder_open</mat-icon>
+        <h3>Selecciona un preset para editar</h3>
+        <p>Elige uno de la lista o crea uno nuevo</p>
+      </div>
+    }
+  </div>
+</div>

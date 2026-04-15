@@ -37,3 +37,19 @@ x0_NO_CLIENTE = 0.45
 PESO_NOTICIA = 0.4   # Impacto de los medios
 PESO_SOCIAL = 0.5    # Lo que hacen sus vecinos (efecto rebaño)
 PESO_LIQUIDEZ = 0.1  # Salud financiera real del banco
+
+# --- TAMAÑO DEL MERCADO ---
+POBLACION_OBJETIVO = 3000000
+
+# --- ESTRUCTURA DE LA RED SOCIAL (GRAFO) ---
+RED_ENLACES_NUEVOS = 3      # Cuántas conexiones crea cada nuevo nodo (3 es estándar)
+RED_PROB_TRIANGULO = 0.5    # Probabilidad de cerrar triángulos (0.5 = alta clusterización/burbuja)
+
+# --- MULTIPLICADORES DE SALDO (Respecto a la media del nodo) ---
+# Usaremos esto en lugar de los rangos absolutos para que respete tu 'total_depositos'
+MULTIPLICADOR_EMPRESA = (4.0, 8.0)
+MULTIPLICADOR_VIP = (1.5, 3.0)
+MULTIPLICADOR_RETAIL = (0.5, 1.2)
+
+TOTAL_DEPOSITOS = 200000000000  # Ej: 200 Mil Millones
+LIQUIDEZ_INICIAL = 0.07

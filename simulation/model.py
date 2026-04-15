@@ -6,8 +6,41 @@ from .agent import ClienteCaixa
 import numpy as np
 
 class BancoModel(Model):
-    def __init__(self, n, total_depositos, encaje, news_score, news_validez, news_difusion, p_no_clientes=0.2):
+    def __init__(self, n, total_depositos, encaje, news_score, news_validez, news_difusion, p_no_clientes=0.2, preset_params=None):
         super().__init__()
+        
+        # Load parameters from preset or use defaults
+        if preset_params:
+            balances = preset_params.get("balances", {})
+            market = preset_params.get("market", {})
+            network = preset_params.get("network", {})
+            multipliers = preset_params.get("multipliers", {})
+            
+            # Store preset for agent creation
+            self.preset_params = preset_params
+            
+            # Extract configuration
+            self.poblacion_objetivo = market.get("poblacion_objetivo", 3000000)
+            red_enlaces = network.get("red_enlaces_nuevos", 3)
+            red_prob_tri = network.get("red_prob_triangulo", 0.5)
+            
+            self.distribucion_tipos = balances.get("distribucion_tipos", ["Retail", "VIP", "Empresa"])
+            self.probabilidades_tipos = balances.get("probabilidades_tipos", [0.75, 0.20, 0.05])
+            
+            self.multiplicador_empresa = tuple(multipliers.get("multiplicador_empresa", [4.0, 8.0]))
+            self.multiplicador_vip = tuple(multipliers.get("multiplicador_vip", [1.5, 3.0]))
+            self.multiplicador_retail = tuple(multipliers.get("multiplicador_retail", [0.5, 1.2]))
+        else:
+            # Default values
+            self.preset_params = None
+            self.poblacion_objetivo = 3000000
+            red_enlaces = 3
+            red_prob_tri = 0.5
+            self.distribucion_tipos = ["Retail", "VIP", "Empresa"]
+            self.probabilidades_tipos = [0.75, 0.20, 0.05]
+            self.multiplicador_empresa = (4.0, 8.0)
+            self.multiplicador_vip = (1.5, 3.0)
+            self.multiplicador_retail = (0.5, 1.2)
         
         # --- LÓGICA FINANCIERA: SOLVENCIA VS LIQUIDEZ ---
         self.depositos_totales = total_depositos # Patrimonio total del banco
@@ -25,11 +58,13 @@ class BancoModel(Model):
         self.noticia_difusion = news_difusion
 
         # --- RED SOCIAL (SMALL WORLD) ---
-        self.G = nx.powerlaw_cluster_graph(n, 3, 0.5)
+        self.G = nx.powerlaw_cluster_graph(n, red_enlaces, red_prob_tri)
         self.grid = NetworkGrid(self.G)
         self.schedule = RandomActivation(self)
 
-        self.poblacion_objetivo = 3000000
+        self.grid = NetworkGrid(self.G)
+        self.schedule = RandomActivation(self)
+
         self.representacion_por_nodo = self.poblacion_objetivo / n
 
         # --- CREACIÓN DE AGENTES (CLÚSTERES) ---
@@ -39,18 +74,30 @@ class BancoModel(Model):
             es_cliente = self.random.random() > p_no_clientes
             
             if es_cliente:
-                tipo = self.random.choices(["Retail", "VIP", "Empresa"], [75, 20, 5])[0]
+                tipo = self.random.choices(
+                    self.distribucion_tipos,
+                    self.probabilidades_tipos
+                )[0]
                 
                 # Cada nodo representa un fragmento del total de depósitos
                 saldo_promedio_nodo = self.depositos_totales / n_clientes_estimados
                 
                 if tipo == 'Empresa':
                     # Las empresas gestionan clústeres de capital mucho más grandes
-                    saldo = self.random.uniform(saldo_promedio_nodo * 4, saldo_promedio_nodo * 8)
+                    saldo = self.random.uniform(
+                        saldo_promedio_nodo * self.multiplicador_empresa[0],
+                        saldo_promedio_nodo * self.multiplicador_empresa[1]
+                    )
                 elif tipo == 'VIP':
-                    saldo = self.random.uniform(saldo_promedio_nodo * 1.5, saldo_promedio_nodo * 3)
+                    saldo = self.random.uniform(
+                        saldo_promedio_nodo * self.multiplicador_vip[0],
+                        saldo_promedio_nodo * self.multiplicador_vip[1]
+                    )
                 else:
-                    saldo = self.random.uniform(saldo_promedio_nodo * 0.5, saldo_promedio_nodo * 1.2)
+                    saldo = self.random.uniform(
+                        saldo_promedio_nodo * self.multiplicador_retail[0],
+                        saldo_promedio_nodo * self.multiplicador_retail[1]
+                    )
             else:
                 tipo = "No-Cliente"
                 saldo = 0

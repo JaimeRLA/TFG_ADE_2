@@ -7,8 +7,11 @@ import json
 import asyncio
 import numpy as np
 import networkx as nx
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from pathlib import Path
+from typing import Dict, List, Any
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import sys
 import os
 
@@ -16,15 +19,142 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from simulation.model import BancoModel
 
+# Path to presets directory
+PRESETS_DIR = Path(__file__).parent.parent / "presets"
+
 app = FastAPI(title="Bank Run Simulator API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=[
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ===== PRESET MANAGEMENT MODELS =====
+class PresetData(BaseModel):
+    name: str
+    description: str
+    demographics: Dict[str, Any]
+    deposit_guarantee: Dict[str, Any]
+    loyalty: Dict[str, Any]
+    balances: Dict[str, Any]
+    behavior: Dict[str, Any]
+    decision_weights: Dict[str, Any]
+    market: Dict[str, Any]
+    network: Dict[str, Any]
+    multipliers: Dict[str, Any]
+    bank_structure: Dict[str, Any]
+
+
+# ===== PRESET MANAGEMENT ENDPOINTS =====
+@app.get("/api/presets")
+async def list_presets() -> List[Dict[str, str]]:
+    """List all available presets"""
+    if not PRESETS_DIR.exists():
+        return []
+    
+    presets = []
+    for preset_file in PRESETS_DIR.glob("*.json"):
+        if preset_file.name == ".gitkeep":
+            continue
+        try:
+            with open(preset_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                presets.append({
+                    "id": preset_file.stem,
+                    "name": data.get("name", preset_file.stem),
+                    "description": data.get("description", "")
+                })
+        except Exception as e:
+            print(f"Error loading preset {preset_file}: {e}")
+    
+    return presets
+
+
+@app.get("/api/presets/{preset_id}")
+async def get_preset(preset_id: str) -> PresetData:
+    """Get a specific preset by ID"""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if not preset_path.exists():
+        raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+    
+    try:
+        with open(preset_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return PresetData(**data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading preset: {str(e)}")
+
+
+@app.post("/api/presets")
+async def create_preset(preset: PresetData) -> Dict[str, str]:
+    """Create a new preset"""
+    # Sanitize the name for filename
+    preset_id = preset.name.lower().replace(" ", "_").replace("-", "_")
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if preset_path.exists():
+        raise HTTPException(status_code=400, detail=f"Preset '{preset_id}' already exists")
+    
+    try:
+        PRESETS_DIR.mkdir(exist_ok=True)
+        with open(preset_path, "w", encoding="utf-8") as f:
+            json.dump(preset.dict(), f, indent=2, ensure_ascii=False)
+        
+        return {"id": preset_id, "message": "Preset created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating preset: {str(e)}")
+
+
+@app.put("/api/presets/{preset_id}")
+async def update_preset(preset_id: str, preset: PresetData) -> Dict[str, str]:
+    """Update an existing preset"""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if not preset_path.exists():
+        raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+    
+    try:
+        with open(preset_path, "w", encoding="utf-8") as f:
+            json.dump(preset.dict(), f, indent=2, ensure_ascii=False)
+        
+        return {"id": preset_id, "message": "Preset updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating preset: {str(e)}")
+
+
+@app.delete("/api/presets/{preset_id}")
+async def delete_preset(preset_id: str) -> Dict[str, str]:
+    """Delete a preset"""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if not preset_path.exists():
+        raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+    
+    try:
+        preset_path.unlink()
+        return {"id": preset_id, "message": "Preset deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting preset: {str(e)}")
+
+
+# ===== HELPER FUNCTIONS =====
+def load_preset_params(preset_id: str) -> Dict[str, Any]:
+    """Load parameters from a preset file"""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if not preset_path.exists():
+        raise ValueError(f"Preset '{preset_id}' not found")
+    
+    with open(preset_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def _color_cliente(agente) -> str:
@@ -52,8 +182,6 @@ async def simulate(ws: WebSocket):
         cfg = json.loads(raw)
 
         n_agentes            = int(cfg.get("n_agentes", 200))
-        dep_input            = float(cfg.get("dep_input", 10_000_000))
-        encaje               = float(cfg.get("encaje", 0.10))
         score                = float(cfg.get("score", 0.8))
         validez              = float(cfg.get("validez", 0.9))
         difusion             = float(cfg.get("difusion", 0.4))
@@ -61,6 +189,21 @@ async def simulate(ws: WebSocket):
         max_turnos           = int(cfg.get("max_turnos", 150))
         n_simulaciones       = int(cfg.get("n_simulaciones", 5))
         velocidad            = float(cfg.get("velocidad", 0.05))
+        preset_id            = cfg.get("preset_id", "default")
+        
+        # Load preset parameters
+        try:
+            params = load_preset_params(preset_id)
+        except Exception as e:
+            await ws.send_text(json.dumps({
+                "type": "error",
+                "message": f"Error loading preset: {str(e)}"
+            }))
+            return
+        
+        # Extract parameters from preset
+        dep_input = params["bank_structure"]["total_depositos"]
+        encaje = params["bank_structure"]["liquidez_inicial"]
 
         historico_series = []
         todos_los_datos_agentes = []
@@ -69,7 +212,8 @@ async def simulate(ws: WebSocket):
             model = BancoModel(
                 n_agentes, dep_input, encaje,
                 score, validez, difusion,
-                p_no_clientes=p_externos
+                p_no_clientes=p_externos,
+                preset_params=params
             )
             pos = nx.spring_layout(model.G, seed=42)
 
@@ -199,7 +343,10 @@ async def simulate(ws: WebSocket):
         resumen_edad  = df.groupby("Rango Edad")["Fuga %"].mean().reset_index().to_dict(orient="records")
         resumen_tipo  = df.groupby("Tipo")["Fuga %"].mean().reset_index().to_dict(orient="records")
         resumen_sexo  = df.groupby("Sexo")["Fuga %"].mean().to_dict()
-        avg_fgd       = float(df[df["Protegido FGD"] == "Sí"]["Fuga %"].mean()) if len(df) > 0 else 0.0
+        
+        # Calculate avg_fgd, handling NaN values
+        fgd_protected = df[df["Protegido FGD"] == "Sí"]["Fuga %"]
+        avg_fgd = float(fgd_protected.mean()) if len(fgd_protected) > 0 and not pd.isna(fgd_protected.mean()) else 0.0
 
         # Best/worst segment
         if resumen_tipo:

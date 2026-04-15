@@ -80,6 +80,27 @@
         color: var(--color-primary);
       }
     }
+
+    .full-width {
+      width: 100%;
+
+      ::ng-deep .mat-mdc-text-field-wrapper {
+        background-color: transparent !important;
+      }
+
+      ::ng-deep .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+        background-color: transparent !important;
+      }
+    }
+
+    .manage-btn {
+      margin-top: 8px;
+      font-size: 13px;
+      
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
   }
 
   .slider-group {

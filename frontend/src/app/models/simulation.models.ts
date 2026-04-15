@@ -1,7 +1,5 @@
 export interface SimConfig {
   n_agentes: number;
-  dep_input: number;
-  encaje: number;
   score: number;
   validez: number;
   difusion: number;
@@ -9,6 +7,68 @@ export interface SimConfig {
   max_turnos: number;
   n_simulaciones: number;
   velocidad: number;
+  preset_id: string;
+}
+
+export interface PresetSummary {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface PresetData {
+  name: string;
+  description: string;
+  demographics: {
+    edad_media: number;
+    edad_desviacion: number;
+    edad_minima: number;
+    edad_maxima: number;
+    distribucion_sexo: string[];
+    probabilidades_sexo: number[];
+    factor_h: number;
+    factor_m: number;
+  };
+  deposit_guarantee: {
+    umbral_fgd: number;
+    reduccion_panico_fgd: number;
+  };
+  loyalty: {
+    rango_fidelidad: number[];
+  };
+  balances: {
+    saldo_retail_rango: number[];
+    saldo_empresa_rango: number[];
+    distribucion_tipos: string[];
+    probabilidades_tipos: number[];
+  };
+  behavior: {
+    k_ruido_cliente: number;
+    x0_cliente: number;
+    k_ruido_no_cliente: number;
+    x0_no_cliente: number;
+  };
+  decision_weights: {
+    peso_noticia: number;
+    peso_social: number;
+    peso_liquidez: number;
+  };
+  market: {
+    poblacion_objetivo: number;
+  };
+  network: {
+    red_enlaces_nuevos: number;
+    red_prob_triangulo: number;
+  };
+  multipliers: {
+    multiplicador_empresa: number[];
+    multiplicador_vip: number[];
+    multiplicador_retail: number[];
+  };
+  bank_structure: {
+    total_depositos: number;
+    liquidez_inicial: number;
+  };
 }
 
 export interface NodeData {

@@ -1,0 +1,54 @@
+{
+  "name": "Caja Rural",
+  "description": "Banco de proximidad con población rural y envejecida",
+  "demographics": {
+    "edad_media": 68,
+    "edad_desviacion": 12,
+    "edad_minima": 35,
+    "edad_maxima": 100,
+    "distribucion_sexo": ["H", "M"],
+    "probabilidades_sexo": [0.45, 0.55],
+    "factor_h": 1.02,
+    "factor_m": 1.0
+  },
+  "deposit_guarantee": {
+    "umbral_fgd": 100000,
+    "reduccion_panico_fgd": 0.95
+  },
+  "loyalty": {
+    "rango_fidelidad": [0.4, 0.8]
+  },
+  "balances": {
+    "saldo_retail_rango": [5000, 60000],
+    "saldo_empresa_rango": [50000, 500000],
+    "distribucion_tipos": ["Retail", "VIP", "Empresa"],
+    "probabilidades_tipos": [0.95, 0.04, 0.01]
+  },
+  "behavior": {
+    "k_ruido_cliente": 4,
+    "x0_cliente": 0.75,
+    "k_ruido_no_cliente": 6,
+    "x0_no_cliente": 0.65
+  },
+  "decision_weights": {
+    "peso_noticia": 0.7,
+    "peso_social": 0.1,
+    "peso_liquidez": 0.2
+  },
+  "market": {
+    "poblacion_objetivo": 50000
+  },
+  "network": {
+    "red_enlaces_nuevos": 1,
+    "red_prob_triangulo": 0.10
+  },
+  "multipliers": {
+    "multiplicador_empresa": [2.0, 5.0],
+    "multiplicador_vip": [1.5, 2.5],
+    "multiplicador_retail": [0.5, 1.2]
+  },
+  "bank_structure": {
+    "total_depositos": 2500000000,
+    "liquidez_inicial": 0.25
+  }
+}
