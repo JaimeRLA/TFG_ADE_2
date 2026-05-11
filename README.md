@@ -1,94 +1,160 @@
-# **Agent.py**
+# Stress Test Lab - Simulador de Corridas Bancarias
 
-## **1. __init__ (self, unique_id, model, saldo, aversion_base, tipo, edad)**
+Sistema avanzado de simulación basado en agentes para analizar el riesgo de corridas bancarias en diferentes tipos de instituciones financieras.
 
-Aquí se definen las propiedades genéticas y financieras de cada grupo de personas.
+## 🎯 Características Principales
 
-**self.saldo_inicial** = saldo: Guarda el capital total que el clúster tenía al principio. Es la referencia para calcular porcentajes de fuga.
+- **Sistema de Presets Configurable**: Gestiona múltiples configuraciones de parámetros sin modificar código
+- **6 Escenarios Predefinidos**: Desde bancos tradicionales hasta neobancos digitales
+- **Simulación Multi-Agente**: Basada en Mesa framework con redes sociales complejas
+- **Visualización en Tiempo Real**: Interfaz Angular con gráficos dinámicos
+- **Informes Automáticos**: Análisis agregado de riesgo con KPIs y métricas
 
-**self.porcentaje_retirado** = 0.0: Es el "termómetro" del pánico. En clientes es dinero fuera; en no-clientes es intensidad de indignación.
+## 🏦 Presets Incluidos
 
-**self.digitalizacion** = 1.0 - (self.edad / p.EDAD_MAXIMA): Lógica de exposición. Cuanto más joven es el clúster, más alta es su digitalización y más rápido le llegará la noticia por canales digitales.
+1. **Default** - Banco genérico equilibrado
+2. **Santander** - Banco comercial masivo con alta fidelidad de clientes
+3. **Lazard** - Banco de inversión institucional
+4. **Silicon Valley Bank** - Especializado en startups y venture capital
+5. **Revolut** - Neobanca digital para Gen Z/Millennials
+6. **Caja Rural** - Banco de proximidad con población envejecida
 
-**self.aversion** = np.clip(...): Lógica de miedo. Se le suma un "factor generacional": a mayor edad, mayor aversión al riesgo (miedo a perder los ahorros).
+## 🚀 Inicio Rápido
 
-**self.alcance_noticia** = False: El agente empieza ignorando la crisis hasta que la "detecta".
+### Requisitos
+- Python 3.10+
+- Node.js 18+
+- Angular CLI 17+
 
-## **2. step (self)**
+### Instalación
 
-### **Fase 1**: Difusión de la noticia
-- Un sorteo aleatorio decide si el clúster se entera de la noticia. La probabilidad depende de la difusión global de la crisis multiplicada por la digitalización propia del grupo.
+```bash
+# 1. Instalar dependencias Python
+pip install -r requirements.txt
 
-### **Fase 2**: Contagio Social (Inter-Nodo)
-- El agente mira a sus contactos en la red Small-World. Calcula la media de pánico (porcentaje_retirado) de sus vecinos. Si sus amigos están sacando dinero, él se pone nervioso.
+# 2. Instalar Angular CLI (si no está instalado)
+npm install -g @angular/cli
 
-### **Fase 3:** Lógica para No-Clientes (Opinión Pública)
-- Los no-clientes no tienen dinero en el banco, así que su "fuga" es en realidad intensidad de rumor.Evalúa la fuerza de la noticia externa. Si el agente ha sido alcanzado por la noticia (self.alcance_noticia), multiplica la gravedad del hecho por la credibilidad del medio que lo publica.
+# 3. Instalar dependencias del frontend
+cd frontend
+npm install
+cd ..
+```
 
-- Su opinión se forma solo por la noticia y por lo que dicen sus vecinos. Se aplica la Función Sigmoide para que el rumor no crezca linealmente, sino que explote a partir de un umbral de escándalo.
+### Ejecución
 
-### **Fase 4:** Lógica para Clientes (Decisión Financiera)
-- El cliente suma tres miedos: la noticia, sus vecinos y el estado del banco (si ve que la liquidez del banco cae, su miedo aumenta drásticamente). Todo esto se multiplica por su aversion personal. Nuevamente, se usa la Sigmoide para calcular la meta_fuga (cuánto dinero quiere tener fuera del banco ahora mismo).
+**Terminal 1 - Backend:**
+```bash
+uvicorn backend.main:app --reload
+```
 
-- Hasta que el pánico no supera un umbral, el agente se mantiene relativamente tranquilo. Al cruzar ese umbral, la intención de retirar dinero se dispara exponencialmente. Una pendiente alta simula una reacción rápida; el agente pasa de la calma a la acción en muy poco tiempo, replicando el comportamiento de las corridas bancarias digitales modernas.
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+ng serve
+```
 
-## **3. ejecutar_retirada_progresiva (self, meta_fuga)**
+Abre **http://localhost:4200** en tu navegador.
 
-- El agente no saca todo su dinero de golpe. Mira cuánto quiere tener fuera ahora (meta_fuga) y le resta lo que ya sacó antes (porcentaje_retirado). Esa diferencia (un porcentaje) se multiplica por el saldo_inicial del clúster para saber exactamente cuántos euros intenta retirar en este turno.
+## 📋 Uso
 
-- El agente va a la "ventanilla" del banco. Si el banco tiene dinero (liquidez_banco > 0), se procede. El agente solo puede llevarse lo que el banco sea capaz de pagar. Si el agente quiere 1 millón pero el banco solo tiene 500.000€ en caja, el min() asegura que el agente solo se lleve esos 500.000€. Esto simula la falla de liquidez.
+### 1. Gestión de Presets
 
+- **Ver presets**: Despliega el selector en el sidebar
+- **Crear nuevo**: Click en "Gestionar Parámetros" → "Nuevo Preset"
+- **Editar**: Selecciona un preset de la lista y modifica sus valores
+- **Eliminar**: Click en el icono de papelera junto al preset
 
+### 2. Ejecutar Simulación
 
+1. Selecciona un preset de parámetros (ej: "Silicon Valley Bank")
+2. Ajusta los parámetros de la crisis:
+   - Gravedad de la noticia (0-1)
+   - Credibilidad del medio (0-1)
+   - Difusión inicial (0-100%)
+3. Configura el modelo:
+   - Número de agentes (nodos en la red)
+   - Porcentaje de no-clientes
+   - Turnos máximos y simulaciones
+4. Click en "Lanzar Simulación"
 
+### 3. Analizar Resultados
 
+El informe final incluye:
+- Probabilidad de quiebra
+- Porcentaje de fugados
+- Dinámica temporal de liquidez
+- Distribución de fuga por edad, género y tipo de cliente
 
-# **Model.py**
+## 🏗️ Arquitectura
 
-## **1. __init__ (self, n, total_depositos, encaje, news_score, news_validez, news_difusion, p_no_clientes=0.2)**
+```
+├── backend/            # API FastAPI + WebSocket
+│   └── main.py         # Endpoints REST y WebSocket
+├── simulation/         # Motor de simulación Mesa
+│   ├── model.py        # Modelo del banco
+│   └── agent.py        # Comportamiento de agentes
+├── frontend/           # Aplicación Angular
+│   └── src/app/
+│       ├── components/ # UI (dashboard, sidebar, preset-manager)
+│       ├── services/   # Comunicación con backend
+│       └── models/     # Interfaces TypeScript
+├── presets/            # Configuraciones JSON
+│   ├── default.json
+│   ├── santander.json
+│   └── ...
+└── requirements.txt
+```
 
-### **Fase 1:** Lógica Financiera (Balance del Banco)
+## 🔧 Personalización de Presets
 
-En este bloque se establece la diferencia crítica entre Solvencia (cuánto dinero tiene el banco en total) y Liquidez (cuánto tiene disponible para devolver ya mismo).
+Cada preset es un archivo JSON con las siguientes secciones:
 
-- **self.depositos_totales**: Es el patrimonio total que los clientes han confiado al banco.
+- **demographics**: Distribución de edad, género y factores culturales
+- **bank_structure**: Depósitos totales, liquidez, FGD
+- **behavior**: Umbrales de pánico y fidelidad
+- **balances**: Distribución de saldos por tipo de cliente
+- **decision_weights**: Influencia de noticias, redes sociales y liquidez
+- **network**: Estructura de la red social (enlaces, clusterización)
+- **market**: Población objetivo representada
+- **multipliers**: Factores de saldo por segmento
 
-- **self.liquidez_banco**: Se calcula multiplicando los depósitos por el encaje (coeficiente de reserva). Es el dinero físico en caja.
+Ver [presets/README.md](presets/README.md) para detalles completos.
 
-- **self.prestamos_activos**: Es el dinero que el banco no tiene en mano porque lo ha prestado (hipotecas, créditos). Esto representa activos que son valiosos pero que no se pueden convertir en efectivo instantáneamente durante una corrida bancari
+## 📊 Modelo de Simulación
 
-### **Fase 2:** Parámetros de la Crisis
+### Agentes
 
-Define la "fuerza" del rumor externo que va a estresar el sistema.
+- **Clientes**: Representan clusters de ahorradores con decisiones basadas en:
+  - Impacto de noticias
+  - Contagio social (vecinos en la red)
+  - Liquidez real del banco
+  
+- **No-Clientes**: Nodos de opinión pública que amplifican rumores
 
-- **score:** La gravedad intrínseca de la noticia.
-- **validez:** Cuánta credibilidad tiene el medio que la publica.
-- **difusion:** La capacidad de la noticia para expandirse por la red.
+### Dinámica
 
-### **Fase 3:** La Red Social (Small World)
-Aquí se construye el mapa de relaciones entre los agentes. Se utiliza un grafo de Holme y Kim (Powerlaw Cluster Graph) que tiene dos propiedades fundamentales: 
+1. **Difusión**: La noticia se propaga por la red según digitalización
+2. **Contagio Social**: Los agentes observan el pánico de sus vecinos
+3. **Decisión**: Función sigmoide determina el porcentaje de fuga
+4. **Ejecución**: Retiros limitados por liquidez disponible
 
-- **Mundo Pequeño**: Hay "atajos" que permiten que una noticia salte de un grupo a otro muy rápido.
+### Red Social
 
-- **Clustering**: Crea comunidades densas, simulando grupos de amigos o círculos de confianza donde el pánico se refuerza.
+- Grafo Powerlaw Cluster (Holme-Kim)
+- Propiedades de "mundo pequeño"
+- Clustering configurable por preset
 
-### **Fase 4:** Creación de Agentes (Segmentación de Clientes)
+## 🛠️ Tecnologías
 
-**Probabilidad de Cliente:** Usa p_no_clientes para decidir si el nodo es un ahorrador o simplemente un nodo de opinión pública ("No-Cliente").
+- **Backend**: FastAPI, Mesa, NetworkX, NumPy, Pandas
+- **Frontend**: Angular 17+, Material Design, Plotly.js
+- **Comunicación**: WebSocket para streaming en tiempo real
 
-**Distribución de Riqueza:** Retail (75%): Pequeños ahorradores. Tienen entre el 50% y el 120% del saldo promedio, VIP (20%): Clientes con saldos altos (hasta 3 veces el promedio), Empresa (5%): Grandes depósitos (hasta 8 veces el promedio). Son los que más liquidez drenan si se asustan.
+## 📝 Licencia
 
-**Creación de los agentes**
+Proyecto académico - TFG ADE 2025
 
-## **2. step (self)**
+## 👥 Contribuir
 
-- **Ordena a todos los agentes de la simulación que ejecuten su propia función step:** En este punto, cada clúster de clientes y no-clientes evalúa la noticia, mira a sus vecinos, calcula su pánico y, si es necesario, intenta retirar dinero de la ventanilla. Es el momento donde ocurre el "caos" de la corrida bancaria.
-
-- **Verifica que el efectivo disponible en el banco no baje de cero:** Aunque en la vida real un banco no puede entregar dinero que no tiene, en las simulaciones matemáticas a veces pueden ocurrir pequeños errores de precisión si varios agentes retiran fondos simultáneamente. Si la liquidez intenta ser negativa, se fuerza a 0. Esto representa el estado de quiebra técnica total o "caja vacía". El banco ya no puede satisfacer más demandas de efectivo.
-
-- **Realiza un "arqueo de caja" al final del turno:** Recorre a todos los agentes que existen en la simulación, filtra solo a los que son Clientes (if a.tipo != "No-Cliente") y suma sus saldos actuales (a.saldo). Como los agentes han estado retirando dinero durante el schedule.step(), el pasivo del banco (lo que debe a sus clientes) ha disminuido. Esta línea sincroniza el valor global del banco con la realidad de lo que queda en las cuentas de cada clúster.
-
-
-
-
-
+Para agregar nuevos presets o mejorar el modelo, consulta la documentación técnica en [README_TECNICO.md](README_TECNICO.md).

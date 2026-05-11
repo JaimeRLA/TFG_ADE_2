@@ -2,6 +2,4 @@ mesa<3.0
 networkx
 pandas
 numpy
-streamlit
-scikit-learn
 plotly

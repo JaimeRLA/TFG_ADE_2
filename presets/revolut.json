@@ -20,15 +20,16 @@
   },
   "balances": {
     "saldo_retail_rango": [100, 5000],
+    "saldo_vip_rango": [5000, 30000],
     "saldo_empresa_rango": [10000, 100000],
     "distribucion_tipos": ["Retail", "VIP", "Empresa"],
     "probabilidades_tipos": [0.92, 0.06, 0.02]
   },
   "behavior": {
-    "k_ruido_cliente": 18,
+    "k_ruido_cliente": 16,
     "x0_cliente": 0.30,
-    "k_ruido_no_cliente": 12,
-    "x0_no_cliente": 0.45
+    "k_ruido_no_cliente": 16,
+    "x0_no_cliente": 0.35
   },
   "decision_weights": {
     "peso_noticia": 0.15,
@@ -41,11 +42,6 @@
   "network": {
     "red_enlaces_nuevos": 8,
     "red_prob_triangulo": 0.70
-  },
-  "multipliers": {
-    "multiplicador_empresa": [5.0, 15.0],
-    "multiplicador_vip": [2.0, 6.0],
-    "multiplicador_retail": [0.1, 2.0]
   },
   "bank_structure": {
     "total_depositos": 15000000000,

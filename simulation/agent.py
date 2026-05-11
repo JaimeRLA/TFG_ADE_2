@@ -58,10 +58,11 @@ class ClienteCaixa(Agent):
             self.peso_liquidez = 0.1
         
         # --- LÓGICA DE CLÚSTER ---
-        self.saldo_inicial = saldo  # El 100% del dinero del grupo
-        self.saldo = saldo          # Lo que queda actualmente en el banco
+        self.saldo_inicial = saldo  
+        self.saldo = saldo          
         self.saldo_por_persona = self.saldo_inicial / self.model.representacion_por_nodo
-        self.porcentaje_retirado = 0.0 # De 0.0 a 1.0
+        self.porcentaje_retirado = 0.0  # Solo clientes: fracción real de dinero retirado (0-1)
+        self.nivel_escandalo = 0.0       # Solo No-Clientes: nivel de agitación/rumor (0-1)
         self.tipo = tipo
         
         # Parámetros de comportamiento
@@ -76,39 +77,57 @@ class ClienteCaixa(Agent):
 
 
     def step(self):
+        # 0. VECINOS (necesario tanto para difusión como para contagio social)
+        vecinos_ids = list(self.model.G.neighbors(self.pos))
+        vecinos_agentes = [self.model.grid.get_cell_list_contents([v])[0] for v in vecinos_ids]
+
         # 1. DIFUSIÓN (Común)
         if not self.alcance_noticia:
-            if self.random.random() < (self.model.noticia_difusion * self.digitalizacion):
+            factor_tipo = 1.3 if self.tipo == 'Empresa' else (1.15 if self.tipo == 'VIP' else 1.0)
+            factor_sexo = self.factor_m if self.sexo == 'M' else self.factor_h
+            proporcion_vecinos_informados = (
+                sum(1 for v in vecinos_agentes if v.alcance_noticia) / len(vecinos_agentes)
+                if vecinos_agentes else 0.0
+            )
+            tasa_alcance = np.clip(
+                self.model.noticia_difusion * self.digitalizacion * factor_tipo * factor_sexo
+                + proporcion_vecinos_informados * self.peso_social * 0.5,
+                0.0, 1.0
+            )
+            if self.random.random() < tasa_alcance:
                 self.alcance_noticia = True
-        
+
         if not self.alcance_noticia:
             return
 
         # 2. CONTAGIO SOCIAL (Los vecinos miran cuánto pánico hay alrededor)
-        vecinos_ids = list(self.model.G.neighbors(self.pos))
-        vecinos_agentes = [self.model.grid.get_cell_list_contents([v])[0] for v in vecinos_ids]
-        
-        # IMPORTANTE: Los vecinos se asustan por el 'porcentaje_retirado' de otros 
+        # Clientes emiten señal de retirada real; No-Clientes emiten su nivel de escándalo
         if vecinos_agentes:
-            fuga_vecinos = sum(v.porcentaje_retirado for v in vecinos_agentes) / len(vecinos_agentes)
+            fuga_vecinos = sum(
+                v.nivel_escandalo if v.tipo == "No-Cliente" else v.porcentaje_retirado
+                for v in vecinos_agentes
+            ) / len(vecinos_agentes)
         else:
             fuga_vecinos = 0
 
         # 3. LÓGICA PARA NO-CLIENTES (Vector de propagación puro)
         if self.tipo == "No-Cliente":
             impacto_noticia = self.model.noticia_score * self.model.noticia_validez if self.alcance_noticia else 0
-            
+
             # El No-Cliente NO mira la liquidez del banco (no tiene cuenta)
-            score_opinion = (impacto_noticia * self.peso_noticia + fuga_vecinos * self.peso_social)
+            factor_sexo_nc = self.factor_m if self.sexo == "M" else self.factor_h
+            score_opinion = (
+                impacto_noticia * self.peso_noticia + fuga_vecinos * self.peso_social
+            ) * (1 + self.aversion) * factor_sexo_nc
             score_opinion = np.clip(score_opinion, 0, 1)
 
-            # Su 'porcentaje_retirado' NO es dinero, es su 'Nivel de Escándalo'
-            self.porcentaje_retirado = 1 / (1 + np.exp(-self.k_ruido_no_cliente * (score_opinion - self.x0_no_cliente)))
+            # nivel_escandalo: agitación social del No-Cliente (no hay dinero de por medio)
+            self.nivel_escandalo = 1 / (1 + np.exp(-self.k_ruido_no_cliente * (score_opinion - self.x0_no_cliente)))
             return
 
         # 4. LÓGICA PARA CLIENTES 
         impacto_noticia = self.model.noticia_score * self.model.noticia_validez if self.alcance_noticia else 0
-        miedo_banco = 1.0 - (self.model.liquidez_banco / self.model.liquidez_inicial)
+        miedo_banco = 1.0 - (self.model.liquidez_banco / self.model.liquidez_banco_inicial)
         factor_proteccion = self.reduccion_panico_fgd if self.protegido_fgd else 1.2 # El no protegido se asusta un 20% más
         factor_sexo = self.factor_m if self.sexo == "M" else self.factor_h
         
@@ -134,8 +153,7 @@ class ClienteCaixa(Agent):
             # El banco paga lo que puede
             monto_real = min(monto_a_retirar, self.model.liquidez_banco)
             self.model.liquidez_banco -= monto_real
-            self.model.depositos_totales -= monto_real
-            
+
             # Actualizamos el estado interno del agente
             self.saldo -= monto_real
             self.porcentaje_retirado += (monto_real / self.saldo_inicial)

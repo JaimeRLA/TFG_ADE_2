@@ -106,6 +106,11 @@ export class MetricsPanelComponent implements AfterViewInit, OnChanges, OnDestro
           zerolinecolor: 'rgba(255,255,255,0.1)',
         },
         showlegend: false,
+        hoverlabel: {
+          bgcolor: '#1a1d2e',
+          bordercolor: 'rgba(99,102,241,0.55)',
+          font: { color: '#e2e8f0', size: 12, family: 'Inter, Roboto, sans-serif' },
+        },
       } as Partial<Plotly.Layout>,
       { displayModeBar: false, responsive: true },
     );

@@ -7,17 +7,18 @@ import json
 import asyncio
 import numpy as np
 import networkx as nx
+import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from simulation.model import BancoModel
 import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from simulation.model import BancoModel
 
 # Path to presets directory
 PRESETS_DIR = Path(__file__).parent.parent / "presets"
@@ -48,9 +49,36 @@ class PresetData(BaseModel):
     decision_weights: Dict[str, Any]
     market: Dict[str, Any]
     network: Dict[str, Any]
-    multipliers: Dict[str, Any]
     bank_structure: Dict[str, Any]
 
+
+# ===== HELPER FUNCTIONS =====
+def load_preset_params(preset_id: str) -> Dict[str, Any]:
+    """Load parameters from a preset file"""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    
+    if not preset_path.exists():
+        raise ValueError(f"Preset '{preset_id}' not found")
+    
+    with open(preset_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _color_cliente(agente) -> str:
+    if not agente.alcance_noticia:
+        return "rgb(34,139,34)"
+    fuga = agente.porcentaje_retirado
+    if fuga < 0.05:
+        return "rgb(255,165,0)"
+    s = min((fuga - 0.05) / 0.20, 1.0)
+    return f"rgb(255,{int(165*(1-s))},0)"
+
+
+def _color_no_cliente(agente) -> str:
+    if not agente.alcance_noticia:
+        return "rgb(100,100,100)"
+    i = float(np.nan_to_num(agente.nivel_escandalo))
+    return f"rgb({int(100*(1-i))},{int(150+105*i)},255)"
 
 # ===== PRESET MANAGEMENT ENDPOINTS =====
 @app.get("/api/presets")
@@ -145,34 +173,6 @@ async def delete_preset(preset_id: str) -> Dict[str, str]:
         raise HTTPException(status_code=500, detail=f"Error deleting preset: {str(e)}")
 
 
-# ===== HELPER FUNCTIONS =====
-def load_preset_params(preset_id: str) -> Dict[str, Any]:
-    """Load parameters from a preset file"""
-    preset_path = PRESETS_DIR / f"{preset_id}.json"
-    
-    if not preset_path.exists():
-        raise ValueError(f"Preset '{preset_id}' not found")
-    
-    with open(preset_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def _color_cliente(agente) -> str:
-    if not agente.alcance_noticia:
-        return "rgb(34,139,34)"
-    fuga = agente.porcentaje_retirado
-    if fuga < 0.05:
-        return "rgb(255,165,0)"
-    s = min((fuga - 0.05) / 0.20, 1.0)
-    return f"rgb(255,{int(165*(1-s))},0)"
-
-
-def _color_no_cliente(agente) -> str:
-    if not agente.alcance_noticia:
-        return "rgb(100,100,100)"
-    i = float(np.nan_to_num(agente.porcentaje_retirado))
-    return f"rgb({int(100*(1-i))},{int(150+105*i)},255)"
-
 
 @app.websocket("/ws/simulate")
 async def simulate(ws: WebSocket):
@@ -244,7 +244,7 @@ async def simulate(ws: WebSocket):
                 nodos_inf    = sum(1 for a in agentes if a.alcance_noticia)
                 personas_inf = nodos_inf * model.representacion_por_nodo
                 intensidad_rumor = (
-                    sum(a.porcentaje_retirado for a in agentes if a.tipo == "No-Cliente") / n_no_clientes
+                    sum(a.nivel_escandalo for a in agentes if a.tipo == "No-Cliente") / n_no_clientes
                 ) if n_no_clientes > 0 else 0.0
 
                 stats_data["paso"].append(t)
@@ -262,10 +262,11 @@ async def simulate(ws: WebSocket):
                         "y":      float(y),
                         "color":  _color_no_cliente(a) if is_nc else _color_cliente(a),
                         "size":   11 if is_nc else (15 if a.porcentaje_retirado > 0.1 else 13),
+                        "escandalo": float(a.nivel_escandalo) if is_nc else 0.0,
                         "symbol": "diamond" if is_nc else "circle",
                         "tipo":   a.tipo,
                         "alcance": a.alcance_noticia,
-                        "fuga":   float(a.porcentaje_retirado),
+                        "fuga":   float(a.nivel_escandalo) if is_nc else float(a.porcentaje_retirado),
                         "saldo":  float(a.saldo) if not is_nc else 0.0,
                         "rep":    int(model.representacion_por_nodo),
                     })
@@ -320,8 +321,6 @@ async def simulate(ws: WebSocket):
             }))
 
         # ---- Aggregated report ----
-        import pandas as pd
-
         max_t = max(len(s["paso"]) for s in historico_series)
         turnos_quiebra = [len(s["paso"]) for s in historico_series if s["liquidez"][-1] <= 0]
         prob_quiebra   = (len(turnos_quiebra) / n_simulaciones) * 100

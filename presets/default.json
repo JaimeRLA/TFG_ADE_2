@@ -2,27 +2,54 @@
   "name": "Default",
   "description": "Configuración por defecto - Banco genérico",
   "demographics": {
-    "edad_media": 50,
+    "edad_media": 51,
     "edad_desviacion": 18,
     "edad_minima": 18,
     "edad_maxima": 90,
-    "distribucion_sexo": ["H", "M"],
-    "probabilidades_sexo": [0.5, 0.5],
+    "distribucion_sexo": [
+      "H",
+      "M"
+    ],
+    "probabilidades_sexo": [
+      0.5,
+      0.5
+    ],
     "factor_h": 1.1,
-    "factor_m": 1.0
+    "factor_m": 1
   },
   "deposit_guarantee": {
     "umbral_fgd": 100000,
     "reduccion_panico_fgd": 0.5
   },
   "loyalty": {
-    "rango_fidelidad": [0.1, 0.9]
+    "rango_fidelidad": [
+      0.1,
+      0.9
+    ]
   },
   "balances": {
-    "saldo_retail_rango": [1000, 15000],
-    "saldo_empresa_rango": [50000, 200000],
-    "distribucion_tipos": ["Retail", "VIP", "Empresa"],
-    "probabilidades_tipos": [0.75, 0.20, 0.05]
+    "saldo_retail_rango": [
+      1000,
+      15000
+    ],
+    "saldo_vip_rango": [
+      20000,
+      100000
+    ],
+    "saldo_empresa_rango": [
+      50000,
+      200000
+    ],
+    "distribucion_tipos": [
+      "Retail",
+      "VIP",
+      "Empresa"
+    ],
+    "probabilidades_tipos": [
+      0.75,
+      0.2,
+      0.05
+    ]
   },
   "behavior": {
     "k_ruido_cliente": 10,
@@ -41,11 +68,6 @@
   "network": {
     "red_enlaces_nuevos": 3,
     "red_prob_triangulo": 0.5
-  },
-  "multipliers": {
-    "multiplicador_empresa": [4.0, 8.0],
-    "multiplicador_vip": [1.5, 3.0],
-    "multiplicador_retail": [0.5, 1.2]
   },
   "bank_structure": {
     "total_depositos": 200000000000,

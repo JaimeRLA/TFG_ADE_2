@@ -20,6 +20,7 @@
   },
   "balances": {
     "saldo_retail_rango": [50000, 150000],
+    "saldo_vip_rango": [200000, 1000000],
     "saldo_empresa_rango": [1000000, 5000000],
     "distribucion_tipos": ["Retail", "VIP", "Empresa"],
     "probabilidades_tipos": [0.40, 0.40, 0.20]
@@ -41,11 +42,6 @@
   "network": {
     "red_enlaces_nuevos": 3,
     "red_prob_triangulo": 0.20
-  },
-  "multipliers": {
-    "multiplicador_empresa": [10.0, 50.0],
-    "multiplicador_vip": [2.0, 5.0],
-    "multiplicador_retail": [0.5, 1.5]
   },
   "bank_structure": {
     "total_depositos": 1000000000000,

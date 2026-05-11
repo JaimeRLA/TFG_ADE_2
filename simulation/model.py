@@ -14,7 +14,6 @@ class BancoModel(Model):
             balances = preset_params.get("balances", {})
             market = preset_params.get("market", {})
             network = preset_params.get("network", {})
-            multipliers = preset_params.get("multipliers", {})
             
             # Store preset for agent creation
             self.preset_params = preset_params
@@ -26,10 +25,10 @@ class BancoModel(Model):
             
             self.distribucion_tipos = balances.get("distribucion_tipos", ["Retail", "VIP", "Empresa"])
             self.probabilidades_tipos = balances.get("probabilidades_tipos", [0.75, 0.20, 0.05])
-            
-            self.multiplicador_empresa = tuple(multipliers.get("multiplicador_empresa", [4.0, 8.0]))
-            self.multiplicador_vip = tuple(multipliers.get("multiplicador_vip", [1.5, 3.0]))
-            self.multiplicador_retail = tuple(multipliers.get("multiplicador_retail", [0.5, 1.2]))
+
+            self.saldo_retail_rango = tuple(balances.get("saldo_retail_rango", [1000, 15000]))
+            self.saldo_vip_rango = tuple(balances.get("saldo_vip_rango", [20000, 100000]))
+            self.saldo_empresa_rango = tuple(balances.get("saldo_empresa_rango", [50000, 200000]))
         else:
             # Default values
             self.preset_params = None
@@ -38,18 +37,15 @@ class BancoModel(Model):
             red_prob_tri = 0.5
             self.distribucion_tipos = ["Retail", "VIP", "Empresa"]
             self.probabilidades_tipos = [0.75, 0.20, 0.05]
-            self.multiplicador_empresa = (4.0, 8.0)
-            self.multiplicador_vip = (1.5, 3.0)
-            self.multiplicador_retail = (0.5, 1.2)
+            self.saldo_retail_rango = (1000, 15000)
+            self.saldo_vip_rango = (20000, 100000)
+            self.saldo_empresa_rango = (50000, 200000)
         
         # --- LÓGICA FINANCIERA: SOLVENCIA VS LIQUIDEZ ---
-        self.depositos_totales = total_depositos # Patrimonio total del banco
+        self.depositos_totales = total_depositos
         self.coeficiente_reserva = encaje
-        
-        # El banco comienza con una liquidez basada en el encaje
         self.liquidez_banco = total_depositos * self.coeficiente_reserva
-        self.liquidez_inicial = self.liquidez_banco
-        # El dinero prestado (inmovilizado)
+        self.liquidez_banco_inicial = self.liquidez_banco  # snapshot en euros del día 0
         self.prestamos_activos = total_depositos - self.liquidez_banco
         
         # --- PARÁMETROS DE LA CRISIS ---
@@ -61,48 +57,35 @@ class BancoModel(Model):
         self.G = nx.powerlaw_cluster_graph(n, red_enlaces, red_prob_tri)
         self.grid = NetworkGrid(self.G)
         self.schedule = RandomActivation(self)
-
-        self.grid = NetworkGrid(self.G)
-        self.schedule = RandomActivation(self)
-
         self.representacion_por_nodo = self.poblacion_objetivo / n
-
-        # --- CREACIÓN DE AGENTES (CLÚSTERES) ---
-        n_clientes_estimados = n * (1 - p_no_clientes)
         
+        # --- PRIMER PASE: generar saldos brutos proporcionales ---
+        nodos_info = []
         for i, node in enumerate(self.G.nodes()):
             es_cliente = self.random.random() > p_no_clientes
-            
             if es_cliente:
                 tipo = self.random.choices(
                     self.distribucion_tipos,
                     self.probabilidades_tipos
                 )[0]
-                
-                # Cada nodo representa un fragmento del total de depósitos
-                saldo_promedio_nodo = self.depositos_totales / n_clientes_estimados
-                
                 if tipo == 'Empresa':
-                    # Las empresas gestionan clústeres de capital mucho más grandes
-                    saldo = self.random.uniform(
-                        saldo_promedio_nodo * self.multiplicador_empresa[0],
-                        saldo_promedio_nodo * self.multiplicador_empresa[1]
-                    )
+                    saldo_bruto = self.random.uniform(self.saldo_empresa_rango[0], self.saldo_empresa_rango[1])
                 elif tipo == 'VIP':
-                    saldo = self.random.uniform(
-                        saldo_promedio_nodo * self.multiplicador_vip[0],
-                        saldo_promedio_nodo * self.multiplicador_vip[1]
-                    )
+                    saldo_bruto = self.random.uniform(self.saldo_vip_rango[0], self.saldo_vip_rango[1])
                 else:
-                    saldo = self.random.uniform(
-                        saldo_promedio_nodo * self.multiplicador_retail[0],
-                        saldo_promedio_nodo * self.multiplicador_retail[1]
-                    )
+                    saldo_bruto = self.random.uniform(self.saldo_retail_rango[0], self.saldo_retail_rango[1])
             else:
                 tipo = "No-Cliente"
-                saldo = 0
-        
-            # El agente ahora recibe el "saldo" como el patrimonio inicial del clúster
+                saldo_bruto = 0
+            nodos_info.append((i, node, tipo, saldo_bruto))
+
+        # --- NORMALIZACIÓN: escalar para que la suma coincida exactamente con total_depositos ---
+        suma_bruta = sum(s for _, _, t, s in nodos_info if t != "No-Cliente")
+        factor_escala = total_depositos / suma_bruta if suma_bruta > 0 else 1.0
+
+        # --- SEGUNDO PASE: crear agentes con saldos escalados ---
+        for i, node, tipo, saldo_bruto in nodos_info:
+            saldo = saldo_bruto * factor_escala if tipo != "No-Cliente" else 0
             a = ClienteCaixa(i, self, saldo, tipo)
             self.schedule.add(a)
             self.grid.place_agent(a, node)

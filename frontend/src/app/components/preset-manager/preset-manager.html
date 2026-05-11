@@ -323,6 +323,26 @@
 
                   <div class="param-group">
                     <h4 class="group-title">
+                      <mat-icon>star</mat-icon>
+                      Saldos VIP
+                    </h4>
+                    <div class="form-grid cols-2">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mínimo</mat-label>
+                        <input matInput type="number" formControlName="saldo_vip_min" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Máximo</mat-label>
+                        <input matInput type="number" formControlName="saldo_vip_max" />
+                        <span matSuffix>€</span>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="param-group">
+                    <h4 class="group-title">
                       <mat-icon>business</mat-icon>
                       Saldos Empresa
                     </h4>
@@ -460,74 +480,6 @@
                 </div>
               </mat-tab>
 
-              <!-- Multipliers Tab -->
-              <mat-tab>
-                <ng-template mat-tab-label>
-                  <mat-icon>trending_up</mat-icon>
-                  Multiplicadores
-                </ng-template>
-                <div class="tab-content">
-                  <div class="param-group">
-                    <h4 class="group-title">
-                      <mat-icon>business</mat-icon>
-                      Empresa
-                    </h4>
-                    <div class="form-grid cols-2">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Mínimo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_empresa_min" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Máximo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_empresa_max" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-                    </div>
-                  </div>
-
-                  <div class="param-group">
-                    <h4 class="group-title">
-                      <mat-icon>star</mat-icon>
-                      VIP
-                    </h4>
-                    <div class="form-grid cols-2">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Mínimo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_vip_min" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Máximo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_vip_max" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-                    </div>
-                  </div>
-
-                  <div class="param-group">
-                    <h4 class="group-title">
-                      <mat-icon>storefront</mat-icon>
-                      Retail
-                    </h4>
-                    <div class="form-grid cols-2">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Mínimo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_retail_min" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Máximo</mat-label>
-                        <input matInput type="number" step="0.1" formControlName="mult_retail_max" />
-                        <span matSuffix>×</span>
-                      </mat-form-field>
-                    </div>
-                  </div>
-                </div>
-              </mat-tab>
             </mat-tab-group>
           </form>
         </div>

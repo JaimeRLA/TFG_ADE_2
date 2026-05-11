@@ -2,13 +2,13 @@
   "name": "Silicon Valley Bank",
   "description": "Banco especializado en startups y venture capital",
   "demographics": {
-    "edad_media": 35,
+    "edad_media": 45,
     "edad_desviacion": 10,
     "edad_minima": 22,
     "edad_maxima": 65,
     "distribucion_sexo": ["H", "M"],
-    "probabilidades_sexo": [0.6, 0.4],
-    "factor_h": 1.1,
+    "probabilidades_sexo": [0.8, 0.2],
+    "factor_h": 1.3,
     "factor_m": 1.0
   },
   "deposit_guarantee": {
@@ -20,15 +20,16 @@
   },
   "balances": {
     "saldo_retail_rango": [1000, 15000],
+    "saldo_vip_rango": [100000, 1000000],
     "saldo_empresa_rango": [500000, 15000000],
     "distribucion_tipos": ["Retail", "VIP", "Empresa"],
-    "probabilidades_tipos": [0.05, 0.10, 0.85]
+    "probabilidades_tipos": [0.0, 0.05, 0.95]
   },
   "behavior": {
     "k_ruido_cliente": 15,
     "x0_cliente": 0.25,
-    "k_ruido_no_cliente": 12,
-    "x0_no_cliente": 0.45
+    "k_ruido_no_cliente": 15,
+    "x0_no_cliente": 0.25
   },
   "decision_weights": {
     "peso_noticia": 0.2,
@@ -41,11 +42,6 @@
   "network": {
     "red_enlaces_nuevos": 4,
     "red_prob_triangulo": 0.85
-  },
-  "multipliers": {
-    "multiplicador_empresa": [5.0, 12.0],
-    "multiplicador_vip": [1.5, 3.0],
-    "multiplicador_retail": [0.5, 1.2]
   },
   "bank_structure": {
     "total_depositos": 200000000000,

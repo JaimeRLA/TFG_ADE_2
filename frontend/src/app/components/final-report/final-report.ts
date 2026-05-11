@@ -68,6 +68,11 @@ export class FinalReportComponent implements OnChanges, OnDestroy {
       title:  { text: title, font: { size: 13, color: '#e2e8f0' }, x: 0.5 },
       xaxis:  { gridcolor: 'rgba(255,255,255,0.05)', zerolinecolor: 'rgba(255,255,255,0.1)' },
       yaxis:  { gridcolor: 'rgba(255,255,255,0.05)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+      hoverlabel: {
+        bgcolor: '#1a1d2e',
+        bordercolor: 'rgba(99,102,241,0.55)',
+        font: { color: '#e2e8f0', size: 12, family: 'Inter, Roboto, sans-serif' },
+      },
     } as Partial<Plotly.Layout>;
   }
 

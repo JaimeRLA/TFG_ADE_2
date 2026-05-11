@@ -79,6 +79,8 @@ export class PresetManagerComponent implements OnInit {
       // Balances
       saldo_retail_min: [1000],
       saldo_retail_max: [15000],
+      saldo_vip_min: [20000],
+      saldo_vip_max: [100000],
       saldo_empresa_min: [50000],
       saldo_empresa_max: [200000],
       prob_retail: [0.75],
@@ -98,13 +100,6 @@ export class PresetManagerComponent implements OnInit {
       // Network
       red_enlaces_nuevos: [3],
       red_prob_triangulo: [0.5],
-      // Multipliers
-      mult_empresa_min: [4.0],
-      mult_empresa_max: [8.0],
-      mult_vip_min: [1.5],
-      mult_vip_max: [3.0],
-      mult_retail_min: [0.5],
-      mult_retail_max: [1.2],
       // Bank Structure
       total_depositos: [200000000000],
       liquidez_inicial: [0.07],
@@ -176,6 +171,8 @@ export class PresetManagerComponent implements OnInit {
       fidelidad_max: preset.loyalty.rango_fidelidad[1],
       saldo_retail_min: preset.balances.saldo_retail_rango[0],
       saldo_retail_max: preset.balances.saldo_retail_rango[1],
+      saldo_vip_min: preset.balances.saldo_vip_rango[0],
+      saldo_vip_max: preset.balances.saldo_vip_rango[1],
       saldo_empresa_min: preset.balances.saldo_empresa_rango[0],
       saldo_empresa_max: preset.balances.saldo_empresa_rango[1],
       prob_retail: preset.balances.probabilidades_tipos[0],
@@ -191,12 +188,6 @@ export class PresetManagerComponent implements OnInit {
       poblacion_objetivo: preset.market.poblacion_objetivo,
       red_enlaces_nuevos: preset.network.red_enlaces_nuevos,
       red_prob_triangulo: preset.network.red_prob_triangulo,
-      mult_empresa_min: preset.multipliers.multiplicador_empresa[0],
-      mult_empresa_max: preset.multipliers.multiplicador_empresa[1],
-      mult_vip_min: preset.multipliers.multiplicador_vip[0],
-      mult_vip_max: preset.multipliers.multiplicador_vip[1],
-      mult_retail_min: preset.multipliers.multiplicador_retail[0],
-      mult_retail_max: preset.multipliers.multiplicador_retail[1],
       total_depositos: preset.bank_structure.total_depositos,
       liquidez_inicial: preset.bank_structure.liquidez_inicial,
     });
@@ -239,6 +230,7 @@ export class PresetManagerComponent implements OnInit {
       },
       balances: {
         saldo_retail_rango: [formValue.saldo_retail_min, formValue.saldo_retail_max],
+        saldo_vip_rango: [formValue.saldo_vip_min, formValue.saldo_vip_max],
         saldo_empresa_rango: [formValue.saldo_empresa_min, formValue.saldo_empresa_max],
         distribucion_tipos: ['Retail', 'VIP', 'Empresa'],
         probabilidades_tipos: [formValue.prob_retail, formValue.prob_vip, formValue.prob_empresa],
@@ -260,11 +252,6 @@ export class PresetManagerComponent implements OnInit {
       network: {
         red_enlaces_nuevos: formValue.red_enlaces_nuevos,
         red_prob_triangulo: formValue.red_prob_triangulo,
-      },
-      multipliers: {
-        multiplicador_empresa: [formValue.mult_empresa_min, formValue.mult_empresa_max],
-        multiplicador_vip: [formValue.mult_vip_min, formValue.mult_vip_max],
-        multiplicador_retail: [formValue.mult_retail_min, formValue.mult_retail_max],
       },
       bank_structure: {
         total_depositos: formValue.total_depositos,

@@ -38,6 +38,7 @@ export interface PresetData {
   };
   balances: {
     saldo_retail_rango: number[];
+    saldo_vip_rango: number[];
     saldo_empresa_rango: number[];
     distribucion_tipos: string[];
     probabilidades_tipos: number[];
@@ -59,11 +60,6 @@ export interface PresetData {
   network: {
     red_enlaces_nuevos: number;
     red_prob_triangulo: number;
-  };
-  multipliers: {
-    multiplicador_empresa: number[];
-    multiplicador_vip: number[];
-    multiplicador_retail: number[];
   };
   bank_structure: {
     total_depositos: number;
