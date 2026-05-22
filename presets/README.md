@@ -53,12 +53,6 @@ Estructura de la red social:
 - `red_enlaces_nuevos`: Conexiones que crea cada nuevo nodo
 - `red_prob_triangulo`: Probabilidad de cerrar triángulos (clusterización)
 
-### multipliers
-Multiplicadores de saldo respecto a la media:
-- `multiplicador_empresa`: [min, max]
-- `multiplicador_vip`: [min, max]
-- `multiplicador_retail`: [min, max]
-
 ### bank_structure
 Estructura financiera del banco:
 - `total_depositos`: Depósitos totales en €

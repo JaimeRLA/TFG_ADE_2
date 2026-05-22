@@ -103,12 +103,12 @@ class ClienteCaixa(Agent):
         # 2. CONTAGIO SOCIAL (Los vecinos miran cuánto pánico hay alrededor)
         # Clientes emiten señal de retirada real; No-Clientes emiten su nivel de escándalo
         if vecinos_agentes:
-            fuga_vecinos = sum(
+            panico_vecinos = sum(
                 v.nivel_escandalo if v.tipo == "No-Cliente" else v.porcentaje_retirado
                 for v in vecinos_agentes
             ) / len(vecinos_agentes)
         else:
-            fuga_vecinos = 0
+            panico_vecinos = 0
 
         # 3. LÓGICA PARA NO-CLIENTES (Vector de propagación puro)
         if self.tipo == "No-Cliente":
@@ -117,7 +117,7 @@ class ClienteCaixa(Agent):
             # El No-Cliente NO mira la liquidez del banco (no tiene cuenta)
             factor_sexo_nc = self.factor_m if self.sexo == "M" else self.factor_h
             score_opinion = (
-                impacto_noticia * self.peso_noticia + fuga_vecinos * self.peso_social
+                impacto_noticia * self.peso_noticia + panico_vecinos * self.peso_social
             ) * (1 + self.aversion) * factor_sexo_nc
             score_opinion = np.clip(score_opinion, 0, 1)
 
@@ -133,7 +133,7 @@ class ClienteCaixa(Agent):
         
         score_final = (
             impacto_noticia * self.peso_noticia + 
-            fuga_vecinos * self.peso_social + 
+            panico_vecinos * self.peso_social + 
             miedo_banco * self.peso_liquidez
         ) * (1 + self.aversion) * factor_proteccion * factor_sexo
         

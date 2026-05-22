@@ -1,4 +1,4 @@
-# Stress Test Lab - Simulador de Corridas Bancarias
+# Stress Test Lab - Simulador de Pánico Bancario
 
 Sistema avanzado de simulación basado en agentes para analizar el riesgo de corridas bancarias en diferentes tipos de instituciones financieras.
 
@@ -155,6 +155,3 @@ Ver [presets/README.md](presets/README.md) para detalles completos.
 
 Proyecto académico - TFG ADE 2025
 
-## 👥 Contribuir
-
-Para agregar nuevos presets o mejorar el modelo, consulta la documentación técnica en [README_TECNICO.md](README_TECNICO.md).
